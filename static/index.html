@@ -36,6 +36,9 @@ var H = canvas.height = window.innerHeight-50;
 var wscounter = 0;
 var socket;
 
+var img = new Image();
+img.src = "./jswt.jpg";
+
 function debug(str) {
     var debugDiv = document.getElementById('debug');
     debugDiv.innerHTML = "" + str;
@@ -55,6 +58,27 @@ function drawCircle(context,entity) {
         fillStyle = entity["colour"];
         strokeStyle = fillStyle;
         arc(x, y, (entity["radius"])?entity["radius"]:50, 0, 2.0 * Math.PI, false);  
+        stroke();                                
+    }
+}
+
+function drawImg(context, entity) {
+    var x = entity["x"];
+    var y = entity["y"];
+    // resize the image accordingly
+    var imgWidth = ( entity["radius"] ? 45 + entity["radius"]: 10);
+    var imgHeight = ( entity["radius"] ? 45 + entity["radius"]: 10);
+    context.drawImage(img, x, y, imgWidth, imgHeight);
+    with(context) {
+        beginPath();              
+        lineWidth = 5;
+        var x = entity["x"];
+        var y = entity["y"];
+        //moveTo(x,y);
+        fillStyle = entity["colour"];
+        strokeStyle = fillStyle;
+        rectHeight = ( entity["radius"] ? 5 + entity["radius"]: 10);
+        rect(x,y,rectHeight,rectHeight) 
         stroke();                                
     }
 }
@@ -83,7 +107,8 @@ function renderFrame() {
     clearFrame();
     for (var key in world) {
         var entity = world[key];
-        drawCircle(context,prepEntity(entity));
+        // drawCircle(context,prepEntity(entity));
+        drawImg(context,prepEntity(entity));
     }
 }
 
@@ -125,6 +150,7 @@ function addEntity(entity, data) {
     world[entity] = data;
     drawNextFrame(); // (but should we?)
     //XXX: Send a XHTML Request that updates the entity you just modified!
+    socket.send(JSON.stringify({"entity":entity,"data":data}));
 }
 var counter = 0;
 function addEntityWithoutName(data) {
@@ -250,18 +276,25 @@ function update() {
 
 
 function wsSetup() {
-    var url = "ws://"+host+"/subscribe";   
+    var url = "ws://"+host+"/subscribe";
     socket = new WebSocket(url);
     socket.onopen = function() {
         //XXX: TODO What are you going to do here?
+        console.log("Connected to "+url);
+        if (!window.WebSocket) alert("WebSocket not supported by this browser");
     };
     socket.onerror = function(msg) {
-        debug("WebSocket Error:" + msg.data);
+        debug("WebSocket Error:" + msg.data + " " + socket.readyState);
     };
     socket.onmessage = function(msg) {  
         try {
             debug("WebSocket Recv:" + msg.data);
-            //XXX: TODO What are you going to do here?            
+            //XXX: TODO What are you going to do here?
+            var data = JSON.parse(msg.data);
+            for (entity in data) {
+                world[entity] = data[entity];
+            }
+            drawNextFrame();
         } catch (e) {
             alert("socket on message: " + e);
         }
@@ -278,5 +311,15 @@ setInterval( update, 1000/30.0);
 
 
     </script>
+
+<!-- function clearScreen() {
+    sendJSONXMLHTTPRequest("http://"+host+"/clear", {}, function(json) {
+        world = json;
+        drawNextFrame();
+    });
+};
+
+<button onclick ="clearScreen()">Clear Screen</button> -->
+
 </body>
 </html>
