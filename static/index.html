@@ -66,8 +66,8 @@ function drawImg(context, entity) {
     var x = entity["x"];
     var y = entity["y"];
     // resize the image accordingly
-    var imgWidth = ( entity["radius"] ? 45 + entity["radius"]: 10);
-    var imgHeight = ( entity["radius"] ? 45 + entity["radius"]: 10);
+    var imgWidth = ( entity["radius"] ? 5 + entity["radius"]: 10);
+    var imgHeight = ( entity["radius"] ? 5 + entity["radius"]: 10);
     context.drawImage(img, x, y, imgWidth, imgHeight);
     with(context) {
         beginPath();              
