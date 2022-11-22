@@ -280,11 +280,9 @@ function wsSetup() {
     socket = new WebSocket(url);
     socket.onopen = function() {
         //XXX: TODO What are you going to do here?
-        console.log("Connected to "+url);
-        if (!window.WebSocket) alert("WebSocket not supported by this browser");
     };
     socket.onerror = function(msg) {
-        debug("WebSocket Error:" + msg.data + " " + socket.readyState);
+        debug("WebSocket Error:" + msg.data);
     };
     socket.onmessage = function(msg) {  
         try {
